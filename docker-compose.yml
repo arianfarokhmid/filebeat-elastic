@@ -1,0 +1,44 @@
+version: '2.4'
+
+services:
+  elasticsearch:
+    image: registry.local:5002/backend/elasticsearch:8.12.1
+    container_name: elasticsearch
+    environment:
+    - discovery.type=single-node
+    - xpack.security.enrollment.enabled=false
+    - node.name=bar
+    - cluster.name=bar
+    - network.host=0.0.0.0
+    - ELASTIC_USERNAME=elastic
+    - ELASTIC_PASSWORD=elastic
+    - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    restart: unless-stopped
+    volumes:
+      - /srv/db/elasticsearch/data:/usr/share/elasticsearch/data
+      - /srv/db/elasticsearch/backup:/usr/share/elasticsearch/backup  
+    ports:
+      - "9300:9300"
+      - "9200:9200"
+    networks:
+      - product
+
+  kibana:
+    image: registry.local:5002/backend/kibana:8.12.1
+    container_name: kibana
+    restart: unless-stopped   
+    environment:
+      - ELASTICSEARCH_USERNAME=kibana
+      - ELASTICSEARCH_PASSWORD=tJdbigH7qArdW=ebgh9c
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    networks:
+      - product
+
+volumes:        
+        elasticsearch_v8_data:
+                external: false
+networks:
+        product:
+                name: product
