@@ -1,0 +1,35 @@
+PUT _ingest/pipeline/springboot_pipeline
+{
+  "description": "Parse Spring Boot log and remove ANSI codes",
+  "processors": [
+    {
+      "gsub": {
+        "field": "message",
+        "pattern": "\\u001B\\[[;\\d]*[A-Za-z]",
+        "replacement": ""
+      }
+    },
+    {
+      "grok": {
+        "field": "message",
+        "patterns": [
+          "%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:log.level} %{NUMBER:pid} --- \\[%{DATA:thread}\\] %{JAVACLASS:logger}\\s*: %{GREEDYDATA:log.message}"
+        ],
+        "pattern_definitions": {
+          "TIMESTAMP_ISO8601": "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}[+-]\\d{2}:\\d{2}"
+        }
+      }
+    },
+    {
+      "date": {
+        "field": "timestamp",
+        "formats": ["yyyy-MM-dd'T'HH:mm:ss.SSSXXX"]
+      }
+    },
+    {
+      "remove": {
+        "field": "message"
+      }
+    }
+  ]
+}
